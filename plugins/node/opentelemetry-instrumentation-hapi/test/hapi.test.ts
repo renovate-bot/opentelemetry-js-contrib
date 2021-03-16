@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-import { context, NoopLogger, setSpan } from '@opentelemetry/api';
+import { context, setSpan } from '@opentelemetry/api';
 import { NodeTracerProvider } from '@opentelemetry/node';
 import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks';
 import {
   InMemorySpanExporter,
   SimpleSpanProcessor,
 } from '@opentelemetry/tracing';
+import { getPlugin } from './plugin';
+const plugin = getPlugin();
+
 import * as assert from 'assert';
 import * as hapi from '@hapi/hapi';
-import { plugin } from '../src';
 import { AttributeNames, HapiLayerType } from '../src/types';
 
 describe('Hapi Instrumentation - Core Tests', () => {
-  const logger = new NoopLogger();
   const provider = new NodeTracerProvider();
   const memoryExporter = new InMemorySpanExporter();
   const spanProcessor = new SimpleSpanProcessor(memoryExporter);
@@ -37,7 +38,8 @@ describe('Hapi Instrumentation - Core Tests', () => {
   let server: hapi.Server;
 
   before(() => {
-    plugin.enable(hapi, provider, logger);
+    plugin.enable();
+    plugin.setTracerProvider(provider);
   });
 
   beforeEach(async () => {
